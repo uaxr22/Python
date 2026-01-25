@@ -1,0 +1,56 @@
+{
+  "aws_region": "us-east-1",
+  "role_arn": null,
+  "external_id": null,
+  "redshift": {
+    "cluster_identifier": "your-redshift-cluster",
+    "workgroup_name": null,
+    "database": "dev",
+    "db_user": "awsuser",
+    "secret_arn": null
+  },
+  "tests": [
+    {
+      "name": "redshift_row_count_orders",
+      "type": "redshift_sql",
+      "sql_file": "aws_test_automation/sql/redshift_row_count.sql",
+      "assertion": {
+        "operator": "greater_than",
+        "expected": 0
+      }
+    },
+    {
+      "name": "dynamodb_orders_table_has_records",
+      "type": "dynamodb_partiql",
+      "statement_file": "aws_test_automation/sql/dynamodb_orders_check.sql",
+      "assertion": {
+        "operator": "greater_than",
+        "expected": 0,
+        "path": "Count"
+      }
+    },
+    {
+      "name": "lambda_etl_healthcheck",
+      "type": "lambda_invoke",
+      "function_name": "etl-healthcheck",
+      "payload": {
+        "ping": true
+      },
+      "assertion": {
+        "operator": "equals",
+        "expected": 200,
+        "path": "StatusCode"
+      }
+    },
+    {
+      "name": "glue_job_last_run_succeeded",
+      "type": "glue_job_status",
+      "job_name": "daily-etl",
+      "assertion": {
+        "operator": "equals",
+        "expected": "SUCCEEDED",
+        "path": "JobRunState"
+      }
+    }
+  ]
+}
